@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Reminders - Expense Tracker</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Redirect if not logged in -->
+    <script>
+        if (!localStorage.getItem("isLoggedIn")) {
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark navbar-expand-lg bg-dark">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold" href="index.html">💰 Expense Tracker</a>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="container text-center mt-5">
+        <h1 class="mb-3">Payment Reminders</h1>
+        <p>Never miss a bill again! Set reminders for your upcoming payments.</p>
+    </div>
+
+    <!-- Reminder Form Section -->
+    <div class="container mt-4">
+        <div class="card shadow p-4">
+            <h3 class="text-center mb-4">Add New Reminder</h3>
+            <form id="reminderForm">
+                <div class="mb-3">
+                    <label for="reminderTitle" class="form-label">Reminder Title</label>
+                    <input type="text" class="form-control" id="reminderTitle" placeholder="e.g., Rent, Subscription, Loan EMI" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reminderAmount" class="form-label">Amount (₹)</label>
+                    <input type="number" class="form-control" id="reminderAmount" placeholder="e.g., 1500" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reminderDate" class="form-label">Due Date</label>
+                    <input type="date" class="form-control" id="reminderDate" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reminderNotes" class="form-label">Notes (Optional)</label>
+                    <textarea class="form-control" id="reminderNotes" rows="2" placeholder="Any extra details?"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Set Reminder</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reminder List Section -->
+    <div class="container mt-5">
+        <h3 class="text-center mb-3">Your Active Reminders</h3>
+        <ul class="list-group" id="reminderList">
+            <li class="list-group-item text-center">No reminders yet — add one above!</li>
+        </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5">
+        <p>&copy; 2025 Expense Tracker | Built with 💙</p>
+    </footer>
+
+    <script>
+        const currentUserEmail = localStorage.getItem("currentUserEmail");
+
+        function getUserReminders() {
+            const allReminders = JSON.parse(localStorage.getItem("reminders")) || {};
+            return allReminders[currentUserEmail] || [];
+        }
+
+        function saveUserReminders(reminders) {
+            let allReminders = JSON.parse(localStorage.getItem("reminders")) || {};
+            allReminders[currentUserEmail] = reminders;
+            localStorage.setItem("reminders", JSON.stringify(allReminders));
+        }
+
+        function renderReminders() {
+            const reminders = getUserReminders();
+            const list = document.getElementById("reminderList");
+            list.innerHTML = reminders.length ? "" : "<li class='list-group-item text-center'>No reminders yet — add one above!</li>";
+            reminders.forEach((reminder, index) => {
+                list.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${reminder.title}</strong> - ₹${reminder.amount} due on ${reminder.date}
+                            <p class="text-muted mb-0">${reminder.notes}</p>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="deleteReminder(${index})">Delete</button>
+                    </li>
+                `;
+            });
+        }
+
+        document.getElementById("reminderForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            
+            const newReminder = {
+                title: document.getElementById("reminderTitle").value,
+                amount: document.getElementById("reminderAmount").value,
+                date: document.getElementById("reminderDate").value,
+                notes: document.getElementById("reminderNotes").value
+            };
+
+            const reminders = getUserReminders();
+            reminders.push(newReminder);
+            saveUserReminders(reminders);
+            renderReminders();
+        });
+
+        function deleteReminder(index) {
+            let reminders = getUserReminders();
+            reminders.splice(index, 1);
+            saveUserReminders(reminders);
+            renderReminders();
+        }
+
+        function logout() {
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("currentUserEmail");
+            window.location.href = "login.html";
+        }
+
+        renderReminders();
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
